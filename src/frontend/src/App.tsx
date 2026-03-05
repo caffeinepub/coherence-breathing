@@ -21,7 +21,7 @@ interface SessionConfig {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const INHALE_MS = 5500;
+const INHALE_MS = 6000;
 const PHASE_DURATION = INHALE_MS; // inhale and exhale have the same duration
 
 const SESSION_OPTIONS: SessionConfig[] = [
@@ -71,7 +71,7 @@ function HomeView({ onStart }: { onStart: (config: SessionConfig) => void }) {
       icon: Wind,
       title: "Nervous System Balance",
       description:
-        "The 5.5-second rhythm is the resonant frequency of the human body — it creates coherence between brain, heart, and body, restoring autonomic balance.",
+        "The 6-second rhythm is a well-studied coherence breathing pace — it creates coherence between brain, heart, and body, restoring autonomic balance.",
     },
     {
       icon: Activity,
@@ -131,7 +131,7 @@ function HomeView({ onStart }: { onStart: (config: SessionConfig) => void }) {
               className="font-body text-lg leading-relaxed max-w-sm mx-auto"
               style={{ color: "oklch(0.48 0.07 230)" }}
             >
-              Find your rhythm. 5.5 seconds in, 5.5 seconds out.
+              Find your rhythm. Breathe with intention.
             </p>
           </motion.div>
         </div>
@@ -245,7 +245,7 @@ function HomeView({ onStart }: { onStart: (config: SessionConfig) => void }) {
               className="font-body text-base leading-relaxed"
               style={{ color: "oklch(0.48 0.07 230)" }}
             >
-              Science-backed benefits of 5.5-second breathing
+              Science-backed benefits of 6-second breathing
             </p>
           </div>
 
@@ -556,10 +556,20 @@ function SessionView({
 // ─── CompletionView ───────────────────────────────────────────────────────────
 
 function CompletionView({
-  config,
   onHome,
 }: { config: SessionConfig; onHome: () => void }) {
-  const minutes = config.durationMs / 60000;
+  const [gratitude, setGratitude] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => inputRef.current?.focus(), 700);
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onHome();
+  };
 
   return (
     <div
@@ -571,7 +581,7 @@ function CompletionView({
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
-        className="flex flex-col items-center gap-8 max-w-sm"
+        className="flex flex-col items-center gap-8 max-w-sm w-full"
       >
         {/* Completed circle */}
         <div
@@ -593,21 +603,11 @@ function CompletionView({
         </div>
 
         <div>
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="font-body text-sm font-medium uppercase tracking-widest mb-3"
-            style={{ color: "oklch(0.55 0.08 210)" }}
-          >
-            {minutes} minutes complete
-          </motion.p>
-
           <motion.h2
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
-            className="font-display text-3xl sm:text-4xl font-semibold leading-tight mb-4"
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="font-display text-3xl sm:text-4xl font-semibold leading-tight mb-3"
             style={{ color: "oklch(0.88 0.06 215)" }}
           >
             Well done.
@@ -616,40 +616,68 @@ function CompletionView({
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+            transition={{ duration: 0.6, delay: 0.45 }}
             className="font-body text-base leading-relaxed"
             style={{ color: "oklch(0.62 0.06 220)" }}
           >
-            Take a moment to notice how you feel. Your nervous system has found
-            its rhythm.
+            What's one thing you're grateful for today?
           </motion.p>
         </div>
 
-        <motion.button
-          data-ocid="completion.home_button"
-          onClick={onHome}
+        <motion.form
+          onSubmit={handleSubmit}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="font-body font-medium px-8 py-3.5 rounded-2xl text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-          style={{
-            background: "oklch(0.52 0.16 215)",
-            color: "oklch(0.97 0.02 210)",
-            boxShadow: "0 4px 20px oklch(0.52 0.16 215 / 0.35)",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background =
-              "oklch(0.58 0.16 210)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background =
-              "oklch(0.52 0.16 215)";
-          }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="w-full flex flex-col gap-3"
         >
-          Return home
-        </motion.button>
+          <input
+            ref={inputRef}
+            data-ocid="completion.gratitude_input"
+            type="text"
+            value={gratitude}
+            onChange={(e) => setGratitude(e.target.value)}
+            placeholder="Type and press Enter..."
+            className="w-full rounded-2xl px-5 py-4 font-body text-base outline-none focus:ring-2 transition-all"
+            style={{
+              background: "oklch(0.20 0.05 228 / 0.8)",
+              color: "oklch(0.88 0.06 215)",
+              border: "1px solid oklch(0.35 0.07 225 / 0.5)",
+              caretColor: "oklch(0.72 0.12 200)",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "oklch(0.55 0.12 210 / 0.8)";
+              e.currentTarget.style.boxShadow =
+                "0 0 0 3px oklch(0.52 0.16 215 / 0.15)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "oklch(0.35 0.07 225 / 0.5)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          />
+          <motion.button
+            type="submit"
+            data-ocid="completion.submit_button"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="font-body font-medium px-8 py-3.5 rounded-2xl text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            style={{
+              background: "oklch(0.52 0.16 215)",
+              color: "oklch(0.97 0.02 210)",
+              boxShadow: "0 4px 20px oklch(0.52 0.16 215 / 0.35)",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "oklch(0.58 0.16 210)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background =
+                "oklch(0.52 0.16 215)";
+            }}
+          >
+            Done
+          </motion.button>
+        </motion.form>
       </motion.div>
     </div>
   );
